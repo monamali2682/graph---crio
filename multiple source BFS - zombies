@@ -1,0 +1,98 @@
+A locality is in the shape of a n*m grid where each cell in a grid represents a house. There is a serious virus outbreak in this locality. 
+This deadly virus converts people to zombies. Each cell in the grid has one of the following three values:
+0 -> House is empty
+1 -> House has people but not yet infected.
+2 -> House is infected and has zombies.
+In one minute all the non-empty houses adjacent to an infected house get infected and the people are converted into zombies
+(Two houses are called adjacent if they share a common edge). If all the people are infected then the government will have to bomb the locality.
+Print the minimum time after which all the non-empty houses get infected (Basically no cells in the grid should be left 1. All cell values should be 2 or 0).
+If all the non-empty houses will never get infected then print -1.
+
+import java.util.*;
+class Pair{
+    int i;
+    int j;
+    int time;
+    Pair(int i,int j, int time){
+        this.i=i;
+        this.j=j;
+        this.time=time;
+    }
+}
+
+class Zombies{
+    public static void main(String args[]){
+        Scanner sc = new Scanner(System.in);
+        int t = sc.nextInt();
+        while(t > 0){
+            int n=sc.nextInt();
+            int m=sc.nextInt();
+            int[][] grid=new int[n][m];
+            for(int i=0;i<n;i++)
+            {
+                for(int j=0;j<m;j++)
+                {
+                    grid[i][j]=sc.nextInt();
+                }
+            }
+            System.out.println(zombies(grid,n,m));
+            t = t - 1;
+        }
+        
+    }
+
+    static int zombies(int[][] grid,int n,int m){
+        Queue<Pair> q = new LinkedList<>();
+        int countZero=0;
+        int countInfected =0;
+        for(int i=0;i<n;i++){
+            for(int j=0;j<m;j++){
+                if(grid[i][j]==2){
+                    q.add(new Pair(i,j,0));
+                }
+                else if(grid[i][j]==0){
+                    countZero++;
+                }
+            }
+        }
+
+        int ans=0;
+        while(!q.isEmpty()){
+            Pair curr= q.remove();
+            countInfected++;
+            int i= curr.i;
+            int j= curr.j;
+            int t= curr.time;
+            ans= Math.max(ans,t);
+            if(i+1<n && grid[i+1][j]==1){
+                q.add(new Pair(i+1,j,t+1));
+                grid[i+1][j]=2;
+               
+            }
+            if(i-1>=0 && grid[i-1][j]==1){
+                q.add(new Pair(i-1,j,t+1));
+                grid[i-1][j]=2;
+                
+            }
+            if(j+1<m && grid[i][j+1]==1){
+                q.add(new Pair(i,j+1,t+1));
+                grid[i][j+1]=2;
+                
+            }
+            if(j-1>=0  && grid[i][j-1]==1){
+                q.add(new Pair(i,j-1,t+1));
+                grid[i][j-1]=2;
+                
+            }
+        }
+        // for(int i=0;i<n;i++){
+        //     for(int j=0;j<m;j++){
+        //         if(grid[i][j]==1){
+        //             return -1;
+        //         }
+        //     }
+        // }
+        if(countInfected+ countZero != m*n){ return -1;}
+        return ans;    
+    }
+}
