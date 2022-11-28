@@ -27,6 +27,7 @@ Solution 2 – got accepted on leetcode , but not efficient hence study other ap
              Maximum number of steps allowed is 10.  Suppose First path reaches destination with 8 stops, and second path reaches destination with 9 stops, So both paths are valid, But it is guaranteed that  X > 20, because when node is popped from minheap it is finalised with min cost , and for later popping of same node, cost is always more.
              So first path cost < second path cost, Hence it is correct to neglect nodes if steps > prev steps
 
+Solution 3 - BELLMAN FORD (to learn refer notes with title k flights in /desktop/crio/selfnotes/graph)
 *********************************************************************************************************************************************************************
 
 CODE 2 : GOT SUBMITTED ON LEETCODE 
