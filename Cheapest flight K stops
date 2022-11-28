@@ -1,0 +1,160 @@
+Que: Cheapest flights with max k stops  ( from DSA 5 session 6- Adv data structures)
+There are n cities connected by some number of flights. You are given an array flights where flights[i] = [fromi, toi, pricei] indicates that
+there is a flight from city fromi to city toi with cost pricei.
+You are also given three integers src, dst, and k, return the cheapest price from src to dst with at most k stops. If there is no such route, return -1.
+
+LOGIC    The problem requires slight modification in dijkstras algorithm
+         here the change is we can not take more than k stops, with max k stops we have to find min cost. 
+         the max value of stops will be k+1, i.e. k at last stop & k+1 at destination.
+         so we will add adjacent nodes of curr node into heap, only if our current stops value is <= k, so that stops value will not exceed k+1.
+         minheap will always give node with  min cost .
+         run while loop till heap is not empty ,and when popped node = destination, return cost 
+
+Solution 1 – got accepted on crio but it is wrong ( on github repository)
+             It is wrong because we can not put restriction on cost, 
+             In this code , we are not adding adjacent node in heap if  its previous cost was lesser than current. But this is wrong
+             e.g if for some node previous cost was 20 with 3 steps, and now its current cost is 30 with 1 steps, it should be   
+             considered because, cost 20 with 3 steps may lead to more than k+1 steps till it reaches destination, so we should   
+             have  another alternative with lesser steps. 
+Solution 2 – got accepted on leetcode , but not efficient hence study other approaches mentioned on leetcode (code is below)
+             Here restriction is put on number of steps.
+             If previous stepscount < current steps, then we don’t process its adjacent nodes.
+             Point to note here is stepscount array is updated only after finalising node(when node is popped), i.e  it contains  
+             steps taken to reach that  node with min  cost,
+             So when we are comparing steps, we already know that previous cost was lesser than current, as node was popped  
+             before from minheap, ( when node is popped from minheap, it is the min cost of that node)
+             e.g some node was popped & finalised with steps 4 and cost 20, after that we neglected same node with steps 5 and cost X .
+             Maximum number of steps allowed is 10.  Suppose First path reaches destination with 8 stops, and second path reaches destination with 9 stops, So both paths are valid, But it is guaranteed that  X > 20, because when node is popped from minheap it is finalised with min cost , and for later popping of same node, cost is always more.
+             So first path cost < second path cost, Hence it is correct to neglect nodes if steps > prev steps
+
+*********************************************************************************************************************************************************************
+
+CODE 2 : GOT SUBMITTED ON LEETCODE 
+class Solution {
+    class Pair{
+        int node;
+        int cost;
+        int stops;
+        Pair(int node,int cost,int stops){
+            this.node=node;
+            this.cost=cost;
+            this.stops = stops;
+        }
+    }
+    public int findCheapestPrice(int n, int[][] edges, int source, int dest, int k) {
+        // adj list
+        ArrayList<ArrayList<ArrayList<Integer>>> adj = new ArrayList<>();
+        for(int i=0;i<=n;i++){
+            adj.add(new ArrayList<ArrayList<Integer>>());
+        }
+        for(int i=0;i<edges.length;i++){
+            int u= edges[i][0];
+            int v = edges[i][1];
+            int weight = edges[i][2];    
+            ArrayList<Integer> adjNodeU = new ArrayList<>();
+            adjNodeU.add(v);
+            adjNodeU.add(weight);
+            adj.get(u).add(adjNodeU);
+        }
+        ArrayList<Integer> costs = new ArrayList<>();
+        for(int i=0;i<=n;i++){
+            costs.add(Integer.MAX_VALUE);
+        }
+          ArrayList<Integer> stepcount = new ArrayList<>();
+        for(int i=0;i<=n;i++){
+            stepcount.add(Integer.MAX_VALUE);
+        }
+        // add source node in minheap  
+        PriorityQueue<Pair> minheap = new PriorityQueue<>( (a,b)-> a.cost-b.cost );
+        minheap.add(new Pair(source,0,0));
+        // traversing throught graph -BFS
+        while(!minheap.isEmpty()){
+            Pair curr = minheap.remove();
+            int node= curr.node;
+            int cost = curr.cost;
+            int stops= curr.stops;
+            if(node==dest){
+                return cost;
+            }
+            // stepcount array is filled only after finalsing node, i.e it contains steps to reach that node with minimium cost
+            if(stepcount.get(node)<stops){
+                continue;
+            }
+            stepcount.set(node,stops);
+            //the max value of stops is k+1, i.e. k at last stop & k+1 at destination
+            if(stops<=k){
+                for(ArrayList<Integer> adjc : adj.get(node)){
+                    int adjnode = adjc.get(0);
+                    int wt = adjc.get(1);
+                    //if(costs.get(adjnode)==Integer.MAX_VALUE || (cost+wt < costs.get(adjnode))){
+                        //costs.set(adjnode,cost+wt);
+                        minheap.add(new Pair(adjnode,cost+wt,stops+1)); 
+                }
+            }            
+        }
+        return -1;
+    }
+}
+
+******************************************************************************************************************************************************************************
+
+CODE 1 : GOT SUBMITTED ON CRIO BUT IT IS WRONG
+import java.util.*;
+class Pair{
+        int node;
+        int cost;
+        int stops;
+        Pair(int node,int cost,int stops){
+            this.node=node;
+            this.cost=cost;
+            this.stops = stops;
+        }
+}
+
+public class CheapestFlights {
+    public static int cheapestFlights(int n, ArrayList<ArrayList<Integer>>edges, int source, int dest, int k){
+        // adj list
+        ArrayList<ArrayList<ArrayList<Integer>>> adj = new ArrayList<>();
+        for(int i=0;i<=n;i++){
+            adj.add(new ArrayList<ArrayList<Integer>>());
+        }
+        for(int i=0;i<edges.size();i++){
+            int u= edges.get(i).get(0);
+            int v = edges.get(i).get(1);
+            int weight = edges.get(i).get(2);    
+            ArrayList<Integer> adjNodeU = new ArrayList<>();
+            adjNodeU.add(v);
+            adjNodeU.add(weight);
+            adj.get(u).add(adjNodeU);
+        }
+        ArrayList<Integer> costs = new ArrayList<>();
+        for(int i=0;i<=n;i++){
+            costs.add(0);
+        }
+        // add source node in minheap  
+        PriorityQueue<Pair> minheap = new PriorityQueue<>( (a,b)-> a.cost-b.cost );
+        minheap.add(new Pair(source,0,0));
+        // traversing throught graph -BFS
+        while(!minheap.isEmpty()){
+            Pair curr = minheap.remove();
+            int node= curr.node;
+            int cost = curr.cost;
+            int stops= curr.stops;
+            if(node==dest){
+                return cost;
+            }
+            //the max value of stops is k+1, i.e. k at last stop & k+1 at destination
+            if(stops<=k){
+                for(ArrayList<Integer> adjc : adj.get(node)){
+                    int adjnode = adjc.get(0);
+                    int wt = adjc.get(1);
+                    // add only if new cost is less than old cost 
+                    if(costs.get(adjnode) ==0 || cost+wt < costs.get(adjnode)){
+                        costs.set(adjnode,cost+wt );
+                        minheap.add(new Pair(adjnode,cost+wt,stops+1)); 
+                    }           
+                }
+            }            
+        }
+        return -1;
+    }
